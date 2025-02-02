@@ -111,7 +111,7 @@ model Book{
   description String? @db.Text
   IsFavorite Boolean @default(false)
   IsReading Boolean @default(false)
-  IsFavorite Boolean @default(false)
+  IsFinished Boolean @default(false)
 }
 ```
 ```bash
@@ -336,6 +336,24 @@ app.listen({port: 8080}).then(() => {
     console.log("Server is running on port 8080");
 })
 ```
+### Como fazer relação entre modelos
+no arquivo schema.prisma, as relações são feitas pela sintaxe '@relation', como nessa relação 1:N
+```ts
+model Author {
+  id        String   @id @db.Uuid @default(uuid())
+  name      String
+  books     Book[]   @relation("AuthorBooks") //um autor pode ter varios livros
+}
+
+model Book {
+  id        String   @id @db.Uuid @default(uuid())
+  title     String
+  authorId  String
+  author    Author   @relation(fields: [authorId], references: [id], name: "AuthorBooks")
+}
+
+```
+
 
 ## Referencias
 - [FastFy](https://fastify.dev)
