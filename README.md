@@ -118,6 +118,20 @@ model Book{
 npx prisma migrate dev
 ```
 Para modularizar ainda mais a aplicação, criamos 2 pastas dentro da pasta 'http', a pasta 'routes' que ira guardar todas as rotas da api e a pasta 'service', dentro da pasta service criamos o arquivo prisma.ts, que sera reutilizado dentro das rotas
+
+```
+├── prisma/
+├── src/
+│   ├── http/
+│   │   ├── service/
+│   │   └── routes/
+├── server.ts
+├── .env
+├── .gitignore
+├── package.json
+└── tsconfig.json
+```
+arquivo - prisma.ts
 ```ts
 import { PrismaClient } from "@prisma/client";
 
@@ -262,3 +276,69 @@ export async function updateBook(app: FastifyInstance) {
 }
 
 ```
+e para terminar o crud, vamos fazer o delete, criando tambem um arquivo dentro do routes
+```ts
+import { FastifyInstance } from "fastify";
+import z from "zod";
+import { prisma } from "../services/prisma";
+
+export async function deleteBook(app: FastifyInstance){
+    app.delete("/books/:bookId", async (request, reply) => {
+        // validação do parametro da requisição
+        const getBookParams = z.object({
+            bookId: z.string().uuid(),
+        })
+        // extrai o id do livro da requisição    
+        const { bookId } = getBookParams.parse(request.params);
+        // deleta o livro no banco de dados
+        const book = await prisma.book.findUnique({
+            where: {
+                id: bookId
+            }
+        })
+
+        if (!book) {
+            return reply.status(404).send("Livro não existe");
+        }
+        // se existir, deleta
+        await prisma.book.delete({
+            where: {
+                id: bookId
+            }
+        })
+        return reply.status(204).send("Livro deletado com sucesso");
+    })
+    
+}
+```
+
+finalizando com todas as importações dentro do server.ts
+
+```ts
+import fastify from "fastify";
+import { createBook } from "./routes/createBooks";
+import { getBook } from "./routes/getBooks";
+import { updateBook } from "./routes/updateBook";
+import { deleteBook } from "./routes/deleteBook";
+
+const app = fastify();
+
+app.get("/", async (request, reply) => {
+    return 'Hello World!';
+})
+
+app.register(createBook)
+app.register(getBook)
+app.register(updateBook)
+app.register(deleteBook)
+
+app.listen({port: 8080}).then(() => {
+    console.log("Server is running on port 8080");
+})
+```
+
+## Referencias
+- [FastFy](https://fastify.dev)
+- [Zod](https://zod.dev)
+- [Prisma](https://www.prisma.io/orm)
+- [Video referencia](https://www.youtube.com/watch?v=E6mZSJFozvM)
