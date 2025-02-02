@@ -159,18 +159,55 @@ export function createBook(app: FastifyInstance){
 ```
 Entao volta ao arquivo 'server.ts' e registre a criação da rota
 ```ts
-import fastify from "fastify";
-import { createBook } from "./routes/createBooks";
+import { FastifyInstance } from "fastify";
+import { prisma } from "../services/prisma";
+import z from "zod";
 
-const app = fastify();
+export async function getBook(app: FastifyInstance){
+    app.get("/books", async (request, reply) => {
+        // busca todos os livros no banco de dados
+        const books = await prisma.book.findMany();
+        return reply.status(200).send(books); 
+    })
 
-app.get("/", async (request, reply) => {
-    return 'Hello World!';
-})
+    app.get("/books/:bookId", async (request, reply) => {
+        // validação do parametro da requisição
+        const getBookParams = z.object({
+            bookId: z.string().uuid(),
+        })
+        // extrai o id do livro da requisição    
+        const { bookId } = getBookParams.parse(request.params);
+        // busca o livro no banco de dados
+        const book = await prisma.book.findUnique({
+            where: {
+                id: bookId
+            }
+        })
 
-app.register(createBook) // <-- aqui
+        return reply.status(200).send(book);
+    })
+}
+```
 
-app.listen({port: 8080}).then(() => {
-    console.log("Server is running on port 8080");
-})
+Igualmente para a função get, criamos um arquivo 'getBooks.ts' dentro de routes
+```ts
+import { FastifyInstance } from "fastify";
+import { prisma } from "../services/prisma";
+
+export async function getBook(app: FastifyInstance){
+    app.get("/books", async (request, reply) => {
+        // busca todos os livros no banco de dados
+        const books = await prisma.book.findMany();
+        return reply.status(200).send(books); 
+    })
+}
+```
+
+e registramos no server.ts
+```ts
+...
+
+app.register(createBook) 
+app.register(getBook) // <- aqui
+...
 ```
