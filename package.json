@@ -1,0 +1,23 @@
+{
+  "name": "fastify-api-study",
+  "version": "1.0.0",
+  "description": "Repositorio de estudo do fastify para uma api rest",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/http/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "prisma": "^6.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.0",
+    "fastify": "^5.2.1",
+    "zod": "^3.24.1"
+  }
+}
