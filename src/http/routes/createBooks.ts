@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../services/prisma";
 
-export function createBook(app: FastifyInstance){
+export async function createBook(app: FastifyInstance){
     app.post("/books", async (request, reply) => {
 
         // validação do corpo da requisição
