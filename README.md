@@ -38,7 +38,7 @@ Para criar o tsconfig.json
 tsc --init
 ```
 
-Apos isso, abra o `tsconfig.json` e faça essas alterações
+Apos isso, abra o `tsconfig.json` e faça essas alterações, essas mudanças sao para um codigo mais moderno e eficiente no Node.js 16+
 
 ```json
  /* Language and Environment */
