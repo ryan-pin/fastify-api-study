@@ -9,18 +9,18 @@ export async function createBook(app: FastifyInstance){
         const createBookBody = z.object({
             title: z.string(),
             author: z.string(),
-            desciption: z.string(),
+            description: z.string(),
         })
 
         // extrai os dados do corpo da requisição
-        const { title, author, desciption } = createBookBody.parse(request.body);
+        const { title, author, description } = createBookBody.parse(request.body);
     
         // criação do livro no banco de dados
         const book = await prisma.book.create({
             data: {
                 title,
                 author,
-                desciption
+                description
             }
         })
         
