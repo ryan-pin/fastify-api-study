@@ -14,11 +14,12 @@ datasource db {
 }
 
 model Book{
-  id        String     @id @db.Uuid @default(uuid())
-  title     String
-  author    String
-  IsFavorite Boolean @default(false)
-  IsReading Boolean @default(false)
-  IsFinished Boolean @default(false)
+  id          String  @id @default(uuid())
+  title       String
+  author      String
+  description String? @db.Text
+  isFavorite  Boolean @default(false)
+  isReading   Boolean @default(false)
+  isFinished  Boolean @default(false)
 
 }

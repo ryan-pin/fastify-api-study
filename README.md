@@ -13,6 +13,7 @@ Nesse projeto para acesso e envio de dados vamos utilizar algumas tecnologias
 - Postgres
 - Node.js
 - Zod (para validação dos objetos)
+- Swagger (documentação da api)
 
 ## Iniciando o projeto
 
@@ -37,6 +38,39 @@ Para criar o tsconfig.json
 ```bash
 tsc --init
 ```
+### Configurar o swagger
+```bash
+npm install @fastify/swagger @fastify/swagger-ui
+```
+Depois de instalar o swagger, no arquivo `server.js`, adicione a configuração do swagger (não esqueça as importações do swagger e swaggerUi)
+```js
+
+// Configuração do Swagger
+fastify.register(swagger, {
+  swagger: {
+    info: {
+      title: 'API Fastify',
+      description: 'Documentação da API usando Swagger',
+      version: '1.0.0',
+    },
+    host: 'localhost:8080',
+    schemes: ['http'],
+    consumes: ['application/json'],
+    produces: ['application/json'],
+  }
+});
+
+fastify.register(swaggerUi, {
+  routePrefix: '/docs', // URL da documentação
+  uiConfig: {
+    docExpansion: 'full',
+    deepLinking: false,
+  },
+  staticCSP: true,
+  transformSpecificationClone: true,
+});
+```
+
 
 Apos isso, abra o `tsconfig.json` e faça essas alterações, essas mudanças sao para um codigo mais moderno e eficiente no Node.js 16+
 
@@ -139,82 +173,164 @@ export const prisma = new PrismaClient();
 ```
 Dentro da pasta '📂routes' e do arquivo `createBook.ts` vamos criar nossa rota para criação de um livro, usando o zod para validar o objeto 
 
+para que o swagger documente corretamente o endpoint, precisamos passar o schema dentro do codigo
+
 ```ts
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../services/prisma";
 
-export function createBook(app: FastifyInstance){
-    app.post("/books", async (request, reply) => {
-
-        // validação do corpo da requisição
+export async function createBook(app: FastifyInstance) {
+    app.post("/books", {
+        schema: { // Configuração do Swagger
+            description: "Cria um novo livro",
+            tags: ["Livros"], // Categoria no Swagger
+            body: {
+                type: "object",
+                required: ["title", "author", "description"],
+                properties: {
+                    title: { type: "string", description: "Título do livro" },
+                    author: { type: "string", description: "Autor do livro" },
+                    description: { type: "string", description: "Descrição do livro" }
+                }
+            },
+            response: {
+                201: {
+                    description: "Livro criado com sucesso",
+                    type: "object",
+                    properties: {
+                        bookId: { type: "string", description: "ID do livro criado" }
+                    }
+                }
+            }
+        }
+    }, async (request, reply) => {
+        // Validação do corpo da requisição
         const createBookBody = z.object({
             title: z.string(),
             author: z.string(),
             description: z.string(),
-        })
+        });
 
-        // extrai os dados do corpo da requisição
+        // Extração e validação dos dados
         const { title, author, description } = createBookBody.parse(request.body);
-    
-        // criação do livro no banco de dados
+
+        // Criação do livro no banco de dados
         const book = await prisma.book.create({
-            data: {
-                title,
-                author,
-                description
-            }
-        })
-        
-        // apos a criação do livro, retornamos o id do livro
+            data: { 
+                title, 
+                author, 
+                description 
+            },
+        });
+
+        // Retorno da resposta
         return reply.status(201).send({ bookId: book.id });
-    }) 
-}
+})}
+
 ```
-Então volta ao arquivo `server.ts` e registre a criação da rota
+Então volta ao arquivo `server.ts` e registre a criação da rota com `app.register()`
+```ts
+...
+
+app.get("/",  () => {
+    return "servidor ok";
+})
+
+app.register(createBook) // <--
+app.register(getBook)
+app.register(updateBook)
+app.register(deleteBook)
+
+app.listen({port: 8080}).then(() => {
+    console.log("Server is running on port 8080");
+})
+...
+
+```
+
+Igualmente para a função get, criamos um arquivo `getBooks.ts` dentro de routes, junto do schema para a documentação do swagger
 ```ts
 import { FastifyInstance } from "fastify";
 import { prisma } from "../services/prisma";
 import z from "zod";
 
-export async function getBook(app: FastifyInstance){
-    app.get("/books", async (request, reply) => {
-        // busca todos os livros no banco de dados
+export async function getBook(app: FastifyInstance) {
+    app.get("/books", {
+        schema: {
+            description: "Retorna todos os livros cadastrados",
+            tags: ["Livros"],
+            response: {
+                200: {
+                    description: "Lista de livros",
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            id: { type: "string", format: "uuid" },
+                            title: { type: "string" },
+                            author: { type: "string" },
+                            description: { type: "string" }
+                        }
+                    }
+                }
+            }
+        }
+    }, async (request, reply) => {
         const books = await prisma.book.findMany();
-        return reply.status(200).send(books); 
-    })
+        return reply.status(200).send(books);
+    });
 
-    app.get("/books/:bookId", async (request, reply) => {
-        // validação do parametro da requisição
+    app.get("/books/:bookId", {
+        schema: {
+            description: "Retorna um livro pelo ID",
+            tags: ["Livros"],
+            params: {
+                type: "object",
+                properties: {
+                    bookId: { type: "string", format: "uuid", description: "ID do livro" }
+                },
+                required: ["bookId"]
+            },
+            response: {
+                200: {
+                    description: "Detalhes do livro",
+                    type: "object",
+                    properties: {
+                        id: { type: "string", format: "uuid" },
+                        title: { type: "string" },
+                        author: { type: "string" },
+                        description: { type: "string" }
+                    }
+                },
+                404: {
+                    description: "Livro não encontrado",
+                    type: "object",
+                    properties: {
+                        message: { type: "string" }
+                    }
+                }
+            }
+        }
+    }, async (request, reply) => {
         const getBookParams = z.object({
             bookId: z.string().uuid(),
-        })
-        // extrai o id do livro da requisição    
+        });
+
         const { bookId } = getBookParams.parse(request.params);
-        // busca o livro no banco de dados
+
         const book = await prisma.book.findUnique({
-            where: {
-                id: bookId
-            }
-        })
+            where: { id: bookId }
+        });
+
+        if (!book) {
+            return reply.status(404).send({ message: "Livro não existe" });
+        }
 
         return reply.status(200).send(book);
-    })
+    });
 }
-```
 
-Igualmente para a função get, criamos um arquivo `getBooks.ts` dentro de routes
-```ts
-import { FastifyInstance } from "fastify";
-import { prisma } from "../services/prisma";
-
-export async function getBook(app: FastifyInstance){
-    app.get("/books", async (request, reply) => {
-        // busca todos os livros no banco de dados
-        const books = await prisma.book.findMany();
-        return reply.status(200).send(books); 
-    })
-}
 ```
 
 e registramos no `server.ts`
@@ -232,87 +348,141 @@ import z from "zod";
 import { prisma } from "../services/prisma";
 
 export async function updateBook(app: FastifyInstance) {
-  app.patch("/books/:bookId", async (request, reply) => {
-    // validação do parametro da requisição
+  app.patch("/books/:bookId", {
+    schema: {
+      description: "Atualiza informações de um livro pelo ID",
+      tags: ["Livros"],
+      params: {
+        type: "object",
+        properties: {
+          bookId: { type: "string", format: "uuid", description: "ID do livro" }
+        },
+        required: ["bookId"]
+      },
+      body: {
+        type: "object",
+        properties: {
+          isFavorite: { type: "boolean", description: "Marcar como favorito" },
+          isReading: { type: "boolean", description: "Marcar como em leitura" },
+          isFinished: { type: "boolean", description: "Marcar como finalizado" }
+        }
+      },
+      response: {
+        200: {
+          description: "Livro atualizado com sucesso",
+          type: "object",
+          properties: {
+            message: { type: "string" }
+          }
+        },
+        404: {
+          description: "Livro não encontrado",
+          type: "object",
+          properties: {
+            message: { type: "string" }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    // Validação do parâmetro da requisição
     const getBookParams = z.object({
       bookId: z.string().uuid(),
     });
-    // validação do corpo da requisição
+
+    // Validação do corpo da requisição
     const getBookBody = z.object({
       isFavorite: z.optional(z.boolean()),
       isReading: z.optional(z.boolean()),
       isFinished: z.optional(z.boolean()),
     });
 
-    // extrai os dados do corpo da requisição
-    const { bookId } = getBookParams.parse(request.params);   
+    // Extrai os dados do corpo da requisição
+    const { bookId } = getBookParams.parse(request.params);
     const { isFavorite, isReading, isFinished } = getBookBody.parse(request.body);
 
-    const book = await prisma.book.update({
-        where: {
-            id: bookId
-        }
-    })
-    
-    // se nao encontrar pelo id, retorna 404
+    // Busca o livro no banco de dados
+    const book = await prisma.book.findUnique({
+      where: { id: bookId }
+    });
+
+    // Se não encontrar o livro, retorna 404
     if (!book) {
-        return reply.status(404).send("Livro nao encontrado");
+      return reply.status(404).send({ message: "Livro não encontrado" });
     }
 
-    // atualiza o livro no banco de dados
+    // Atualiza o livro no banco de dados
     await prisma.book.update({
-        where: {
-            id: bookId
-        },
-        data: { //atualiza ou mantem o valor atual
-            isFavorite: isFavorite || book?.isFavorite,
-            isReading : isReading || book?.isReading,
-            isFinished : isFinished || book?.isFinished,
-        }
-    })
+      where: { id: bookId },
+      data: {
+        isFavorite: isFavorite ?? book.isFavorite,
+        isReading: isReading ?? book.isReading,
+        isFinished: isFinished ?? book.isFinished,
+      }
+    });
 
-    reply.send() // valor default 200
+    reply.status(200).send({ message: "Livro atualizado com sucesso" });
   });
 }
 
 ```
-e para terminar o crud, vamos fazer o delete, criando tambem um arquivo dentro da pasta routes
+e para terminar o crud, vamos fazer o `delete`, criando tambem um arquivo dentro da pasta routes
 ```ts
 import { FastifyInstance } from "fastify";
 import z from "zod";
 import { prisma } from "../services/prisma";
 
-export async function deleteBook(app: FastifyInstance){
-    app.delete("/books/:bookId", async (request, reply) => {
-        // validação do parametro da requisição
+export async function deleteBook(app: FastifyInstance) {
+    app.delete("/books/:bookId", {
+        schema: {
+            description: "Deleta um livro pelo ID",
+            tags: ["Livros"],
+            params: {
+                type: "object",
+                properties: {
+                    bookId: { type: "string", format: "uuid", description: "ID do livro" }
+                },
+                required: ["bookId"]
+            },
+            response: {
+                204: {
+                    description: "Livro deletado com sucesso"
+                },
+                404: {
+                    description: "Livro não encontrado",
+                    type: "object",
+                    properties: {
+                        message: { type: "string" }
+                    }
+                }
+            }
+        }
+    }, async (request, reply) => {
         const getBookParams = z.object({
             bookId: z.string().uuid(),
-        })
-        // extrai o id do livro da requisição    
+        });
+
         const { bookId } = getBookParams.parse(request.params);
-        // deleta o livro no banco de dados
+
         const book = await prisma.book.findUnique({
-            where: {
-                id: bookId
-            }
-        })
+            where: { id: bookId }
+        });
 
         if (!book) {
-            return reply.status(404).send("Livro não existe");
+            return reply.status(404).send({ message: "Livro não existe" });
         }
-        // se existir, deleta
+
         await prisma.book.delete({
-            where: {
-                id: bookId
-            }
-        })
-        return reply.status(204).send("Livro deletado com sucesso");
-    })
-    
+            where: { id: bookId }
+        });
+
+        return reply.status(204).send();
+    });
 }
+
 ```
 
-finalizando com todas as importações dentro do `server.ts`
+finalizando com todas as importações dentro do `server.ts`, assim temos uma api rest com fastify documentada com o swagger
 
 ```ts
 import fastify from "fastify";
@@ -321,10 +491,38 @@ import { getBook } from "./routes/getBooks";
 import { updateBook } from "./routes/updateBook";
 import { deleteBook } from "./routes/deleteBook";
 
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+
 const app = fastify();
 
-app.get("/", async (request, reply) => {
-    return 'Hello World!';
+// Configuração do Swagger
+app.register(swagger, {
+    swagger: {
+      info: {
+        title: 'API Fastify',
+        description: 'Documentação da API usando Swagger',
+        version: '1.0.0',
+      },
+      host: 'localhost:8080',
+      schemes: ['http'],
+      consumes: ['application/json'],
+      produces: ['application/json'],
+    }
+  });
+  
+  app.register(swaggerUi, {
+    routePrefix: '/docs', // URL da documentação
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false,
+    },
+    staticCSP: true,
+    transformSpecificationClone: true,
+  });
+
+app.get("/",  () => {
+    return "servidor ok";
 })
 
 app.register(createBook)
@@ -359,4 +557,5 @@ model Book {
 - [FastFy](https://fastify.dev)
 - [Zod](https://zod.dev)
 - [Prisma](https://www.prisma.io/orm)
+- [Swagger](https://swagger.io) 
 - [Video referencia](https://www.youtube.com/watch?v=E6mZSJFozvM)
