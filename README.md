@@ -34,6 +34,7 @@ Instale as dependências necessárias para o projeto:
 ```bash
 npm install -D typescript
 npm install -D @types/node
+npm install ts-node
 npm install zod
 npm install fastify
 
