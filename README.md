@@ -134,7 +134,7 @@ Depois de rodar o comando abaixo, sera criado uma pasta Prisma com o schema e mo
 npx prisma init --datasource-provider postgresql
 ```
 ```ts
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/nomedobanco?schema=public"
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/nomedobanco?schema=public"
 ```
 Apos isso, dentro da pasta 📂prisma e dentro do arquivo `schema.prisma` você pode criar seus modelos que serao utilizados, com os modelos ja criados, para fazer uma migração utilize o comando abaixo, entao de um nome para a migração e ela sera efetivada
 ```ts
