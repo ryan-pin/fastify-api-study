@@ -1,51 +1,139 @@
-# API Rest com FastiFy e Typescript
+Com certeza! Vou manter o estilo e os emojis, mas com uma linguagem mais objetiva e profissional. ✨
 
-## Objetivo
+---
 
-O objetivo deste documento é apresentar um exemplo simples de como funciona uma api com rest com FastiFy. 
+# 🚀 API REST com Fastify e TypeScript ✨
 
-## Tecnologias
+## 🎯 Objetivo
 
-Nesse projeto para acesso e envio de dados vamos utilizar algumas tecnologias
+Este documento tem como objetivo demonstrar como criar uma **API REST** simples utilizando **Fastify** e **TypeScript**. A proposta é criar uma aplicação robusta, eficiente e bem estruturada.
 
-- FastiFy
-- Prisma (para conexão com o banco)
-- Postgres
-- Node.js
-- Zod (para validação dos objetos)
-- Swagger (documentação da api)
+## 🔥 Tecnologias
 
-## Iniciando o projeto
+As principais tecnologias utilizadas neste projeto são:
 
-Para criar o package.json
+- 🌈 **Fastify**: Framework para criar servidores web de forma rápida e eficiente.
+- 💻 **Prisma**: ORM para facilitar a conexão com bancos de dados.
+- 🦄 **PostgreSQL**: Banco de dados relacional utilizado para armazenar os dados.
+- 🧑‍💻 **Node.js**: Plataforma para executar o código JavaScript/TypeScript.
+- 🧩 **Zod**: Biblioteca para validação de dados.
+- 📖 **Swagger**: Ferramenta para documentar a API.
+
+---
+
+### 🏁 Iniciando o Projeto
+
+1️⃣ **Criando o `package.json`** 📄
+
+Execute o comando abaixo para gerar o arquivo `package.json` com as configurações padrão:
 
 ```bash
 npm init -y
 ```
-Instalando as dependencias de desenvolvimento
+
+2️⃣ **Instalando as Dependências** 💅
+
+Instale as dependências necessárias para o projeto:
 
 ```bash
-npm install --save-dev typescript
-
-npm install --save-dev @types/node
-
-npm install --save-dev tsx
-
+npm install -D typescript
+npm install -D @types/node
 npm install zod
+npm install fastify
+npm i -D typescript @types/node
 ```
-Para criar o tsconfig.json
+
+3️⃣ **Adicionando Scripts no `package.json`** 💻
+
+Adicione os seguintes scripts no arquivo `package.json` para facilitar o processo de build e execução:
+
+```json
+"scripts": {
+  "build": "tsc -p tsconfig.json",   // Para compilar o projeto usando o TypeScript
+  "dev": "ts-node src/api/server.ts"  // Para rodar o servidor diretamente com o TypeScript
+}
+```
+
+4️⃣ **Inicializando o TypeScript (tsc)** 🌟
+
+Execute o comando abaixo para criar o arquivo `tsconfig.json`:
 
 ```bash
 tsc --init
 ```
-### Configurar o swagger
+
+Em seguida, no arquivo `tsconfig.json`, adicione ou ajuste as configurações para garantir que a compilação do TypeScript funcione corretamente:
+
+```json
+/* Language and Environment */
+"target": "ES2022",                                 
+"lib": ["ES2023"],...
+
+/* Modules */
+"module": "Node16",
+
+/* Completeness */
+"skipLibCheck": true
+```
+
+5️⃣ **Criando Estrutura de Pastas** 📂
+
+Crie a estrutura de pastas conforme abaixo para organizar o código:
+
+```txt
+├── src/
+│   ├── api/
+│   │   └── server.ts
+├── .gitignore
+├── package.json
+└── tsconfig.json
+```
+
+6️⃣ **Testando a API** 🎉
+
+Crie o arquivo `server.ts` dentro da pasta `api` com o seguinte código para iniciar o servidor:
+
+```ts
+import fastify from "fastify";
+
+const app = fastify();
+
+app.get("/", async (request, reply) => {
+  return "Hello World!";
+});
+
+app.listen({ port: 8080 }).then(() => {
+  console.log("Server is running on port 8080");
+});
+```
+
+Execute o comando para rodar a api:
+```bash
+npm run dev 
+```
+
+---
+
+### ✨ Configurando o Swagger
+
+1️⃣ **Instalando o Swagger** 📚
+
+Para documentar a API, instale as dependências necessárias:
+
 ```bash
 npm install @fastify/swagger @fastify/swagger-ui
 ```
-Depois de instalar o swagger, no arquivo `server.js`, adicione a configuração do swagger (não esqueça as importações do swagger e swaggerUi)
-```js
 
-// Configuração do Swagger
+2️⃣ **Configurando o Swagger no `server.ts`** 🖥️
+
+Adicione o seguinte código no `server.ts` para configurar o Swagger e permitir o acesso à documentação da API:
+
+```ts
+[...]
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui'; 
+
+// Registrando o Swagger como uma rota do Fastify
 fastify.register(swagger, {
   swagger: {
     info: {
@@ -60,6 +148,7 @@ fastify.register(swagger, {
   }
 });
 
+// Rota para acessar a documentação do Swagger
 fastify.register(swaggerUi, {
   routePrefix: '/docs', // URL da documentação
   uiConfig: {
@@ -69,74 +158,46 @@ fastify.register(swaggerUi, {
   staticCSP: true,
   transformSpecificationClone: true,
 });
+[...]
+
 ```
 
-
-Apos isso, abra o `tsconfig.json` e faça essas alterações, essas mudanças sao para um codigo mais moderno e eficiente no Node.js 16+
-
-```json
- /* Language and Environment */
-    "target": "ES2022",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "lib": [
-      "ES2023"
-    ],...
-
-    /* Modules */
-    "module": "Node16", 
-    ...
-```
-Crie uma pasta 'src' e dentro da src uma pasta 'http', entao crie o arquivo `server.ts`
+Agora sua API está documentada e acessível pela URL `http://localhost:8080/docs`. 🌐
 
 
+Aqui está a explicação melhorada, com uma estrutura mais coesa:
 
-Faça essa alteração no `package.json` para gerar um script para rodar a api
-```json
-  "scripts": {
-    "dev": "tsx watch src/http/server.ts"
-  },
-```
+---
 
 ## Prisma
 
-O Prisma é um ORM moderno e eficiente para Node.js e TypeScript. Ele facilita a comunicação entre sua aplicação e o banco de dados, permitindo realizar operações de CRUD de maneira mais simples e tipada. (Se quiser, existe uma extensão do vscode para o prisma)
+O Prisma é um ORM moderno e eficiente para Node.js e TypeScript, projetado para facilitar a comunicação entre a sua aplicação e o banco de dados. Ele simplifica as operações de CRUD (criação, leitura, atualização e exclusão), tornando-as mais fáceis e tipadas. Para aproveitar ainda mais o Prisma, você pode instalar uma extensão no VS Code, o que facilita o desenvolvimento.
+
+### Iniciando o Prisma
+
+Primeiro, execute o seguinte comando para inicializar o Prisma com suporte ao banco de dados PostgreSQL:
+
+```bash
+npx prisma init --datasource-provider postgresql
+```
+
+Em seguida, instale as dependências necessárias:
 
 ```bash
 npm install --save-dev prisma
-
 npm install @prisma/client
 ```
-Para conectar com o banco
 
-```bash
-npx prisma init --datasource-provider postgresql
-```
+### Configuração do Banco de Dados
 
-Depois de instalar as dependencias, você pode testar a api no arquivo `server.ts`
-```typescript
-import fastify from "fastify";
+No arquivo `.env`, configure a URL de conexão com o banco de dados: (Caso ele não tenha sido gerado pelos comandos acima, crie-o na raiz do projeto )
 
-const app = fastify();
-
-app.get("/", async (request, reply) => {
-    return 'Hello World!';
-})
-
-app.listen({port: 8080}).then(() => {
-    console.log("Server is running on port 8080");
-})
-```
-entao rode a api com 
-```bash
-npm run dev
-```
-Depois de rodar o comando abaixo, sera criado uma pasta Prisma com o schema e modelos e um .env, va para a .env e coloque as informações do seu banco como, usuario, senha, porta e nome do banco
-```bash
-npx prisma init --datasource-provider postgresql
-```
 ```ts
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/nomedobanco?schema=public"
 ```
-Apos isso, dentro da pasta 📂prisma e dentro do arquivo `schema.prisma` você pode criar seus modelos que serao utilizados, com os modelos ja criados, para fazer uma migração utilize o comando abaixo, entao de um nome para a migração e ela sera efetivada
+
+### Criando Modelos no Prisma
+
 ```ts
 model Book{
   id        String     @id @db.Uuid @default(uuid())
@@ -148,32 +209,41 @@ model Book{
   IsFinished Boolean @default(false)
 }
 ```
+
 ```bash
 npx prisma migrate dev
 ```
-Para modularizar ainda mais a aplicação, criamos 2 pastas dentro da pasta '📂http', a pasta '📂routes' que ira guardar todas as rotas da api e a pasta '📂service', dentro da pasta service criamos o arquivo `prisma.ts`, que sera reutilizado dentro das rotas
+Aqui está a versão melhorada e mais concisa do trecho:
+
+---
+
+Para modularizar a aplicação, criamos duas pastas dentro de `📂api`: `📂routes`, que contém todas as rotas da API, e `📂service`, onde fica o arquivo `prisma.ts`, que será reutilizado nas rotas.
 
 ```
 ├── prisma/
 ├── src/
-│   ├── http/
+│   ├── api/
 │   │   ├── service/
-│   │   └── routes/
-├── server.ts
+│   │   ├── routes/
+│   │   └── server.ts
 ├── .env
 ├── .gitignore
 ├── package.json
 └── tsconfig.json
 ```
-arquivo - prisma.ts
+
+O arquivo `prisma.ts` se conecta ao banco com o Prisma:
+
 ```ts
 import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 ```
-Dentro da pasta '📂routes' e do arquivo `createBook.ts` vamos criar nossa rota para criação de um livro, usando o zod para validar o objeto 
 
-para que o swagger documente corretamente o endpoint, precisamos passar o schema dentro do codigo
+
+## Criando rotas personalizadas
+
+Na pasta `📂routes`, dentro do arquivo `createBook.ts`, criamos a rota para criar um livro, utilizando o Zod para validar o objeto. Para garantir que o Swagger documente corretamente o endpoint, passamos o schema diretamente no código.
 
 ```ts
 import { FastifyInstance } from "fastify";
