@@ -1,7 +1,3 @@
-Com certeza! Vou manter o estilo e os emojis, mas com uma linguagem mais objetiva e profissional. ✨
-
----
-
 # API REST com Fastify e TypeScript 
 
 ## 🎯 Objetivo
@@ -50,7 +46,7 @@ Adicione os seguintes scripts no arquivo `package.json` para facilitar a execuç
 ```json
 "scripts": {
   "build": "tsc -p tsconfig.json",   // Para compilar o projeto usando o TypeScript
-  "dev": "ts-node src/api/server.ts"  // Para rodar o servidor diretamente com o TypeScript
+  "dev": "ts-node src/http/server.ts"  // Para rodar o servidor diretamente com o TypeScript
 }
 ```
 
