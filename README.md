@@ -2,7 +2,7 @@ Com certeza! Vou manter o estilo e os emojis, mas com uma linguagem mais objetiv
 
 ---
 
-# 🚀 API REST com Fastify e TypeScript ✨
+# API REST com Fastify e TypeScript 
 
 ## 🎯 Objetivo
 
@@ -12,7 +12,7 @@ Este documento tem como objetivo demonstrar como criar uma **API REST** simples 
 
 As principais tecnologias utilizadas neste projeto são:
 
-- 🌈 **Fastify**: Framework para criar servidores web de forma rápida e eficiente.
+- 🐺 **Fastify**: Framework para criar servidores web de forma rápida e eficiente.
 - 💻 **Prisma**: ORM para facilitar a conexão com bancos de dados.
 - 🦄 **PostgreSQL**: Banco de dados relacional utilizado para armazenar os dados.
 - 🧑‍💻 **Node.js**: Plataforma para executar o código JavaScript/TypeScript.
@@ -21,7 +21,7 @@ As principais tecnologias utilizadas neste projeto são:
 
 ---
 
-### 🏁 Iniciando o Projeto
+### Iniciando o Projeto
 
 1️⃣ **Criando o `package.json`** 📄
 
@@ -40,12 +40,12 @@ npm install -D typescript
 npm install -D @types/node
 npm install zod
 npm install fastify
-npm i -D typescript @types/node
+
 ```
 
 3️⃣ **Adicionando Scripts no `package.json`** 💻
 
-Adicione os seguintes scripts no arquivo `package.json` para facilitar o processo de build e execução:
+Adicione os seguintes scripts no arquivo `package.json` para facilitar a execução:
 
 ```json
 "scripts": {
@@ -59,7 +59,7 @@ Adicione os seguintes scripts no arquivo `package.json` para facilitar o process
 Execute o comando abaixo para criar o arquivo `tsconfig.json`:
 
 ```bash
-tsc --init
+npx tsc --init
 ```
 
 Em seguida, no arquivo `tsconfig.json`, adicione ou ajuste as configurações para garantir que a compilação do TypeScript funcione corretamente:
@@ -67,13 +67,11 @@ Em seguida, no arquivo `tsconfig.json`, adicione ou ajuste as configurações pa
 ```json
 /* Language and Environment */
 "target": "ES2022",                                 
-"lib": ["ES2023"],...
-
+"lib": ["ES2023"],
+...
 /* Modules */
 "module": "Node16",
-
-/* Completeness */
-"skipLibCheck": true
+...
 ```
 
 5️⃣ **Criando Estrutura de Pastas** 📂
@@ -82,7 +80,7 @@ Crie a estrutura de pastas conforme abaixo para organizar o código:
 
 ```txt
 ├── src/
-│   ├── api/
+│   ├── http/
 │   │   └── server.ts
 ├── .gitignore
 ├── package.json
@@ -91,7 +89,7 @@ Crie a estrutura de pastas conforme abaixo para organizar o código:
 
 6️⃣ **Testando a API** 🎉
 
-Crie o arquivo `server.ts` dentro da pasta `api` com o seguinte código para iniciar o servidor:
+Crie o arquivo `server.ts` dentro da pasta `http` com o seguinte código para iniciar o servidor:
 
 ```ts
 import fastify from "fastify";
@@ -102,12 +100,12 @@ app.get("/", async (request, reply) => {
   return "Hello World!";
 });
 
-app.listen({ port: 8080 }).then(() => {
-  console.log("Server is running on port 8080");
+app.listen({ port: 8080, host: "0.0.0.0" }).then((address) => {
+  console.log(`Server is running at ${address}`);
 });
 ```
 
-Execute o comando para rodar a api:
+Execute o comando para rodar a api
 ```bash
 npm run dev 
 ```
@@ -162,43 +160,43 @@ fastify.register(swaggerUi, {
 
 ```
 
-Agora sua API está documentada e acessível pela URL `http://localhost:8080/docs`. 🌐
-
-
-Aqui está a explicação melhorada, com uma estrutura mais coesa:
+Agora sua API está documentada pelo swagger e acessível pela URL `http://localhost:8080/docs`. 🌐
 
 ---
-
 ## Prisma
 
 O Prisma é um ORM moderno e eficiente para Node.js e TypeScript, projetado para facilitar a comunicação entre a sua aplicação e o banco de dados. Ele simplifica as operações de CRUD (criação, leitura, atualização e exclusão), tornando-as mais fáceis e tipadas. Para aproveitar ainda mais o Prisma, você pode instalar uma extensão no VS Code, o que facilita o desenvolvimento.
 
 ### Iniciando o Prisma
 
-Primeiro, execute o seguinte comando para inicializar o Prisma com suporte ao banco de dados PostgreSQL:
-
-```bash
-npx prisma init --datasource-provider postgresql
-```
-
-Em seguida, instale as dependências necessárias:
+Primeiro, para instalar o prisma, execute o comando no terminal
 
 ```bash
 npm install --save-dev prisma
 npm install @prisma/client
 ```
 
+Em seguida, execute o seguinte comando para inicializar o Prisma com suporte ao banco de dados PostgreSQL:
+
+```bash
+npx prisma init --datasource-provider postgresql
+```
+
 ### Configuração do Banco de Dados
 
-No arquivo `.env`, configure a URL de conexão com o banco de dados: (Caso ele não tenha sido gerado pelos comandos acima, crie-o na raiz do projeto )
+
+Apos rodar o comando acima, sera gerado o arquivo `.env`, configure a URL de conexão com o banco de dados
 
 ```ts
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/nomedobanco?schema=public"
 ```
 
 ### Criando Modelos no Prisma
+Depois de executar o comando no terminal, sera criado uma pasta `📂prisma` com o arquivo `schema.prisma` onde sera possivel criar seus modelos do banco
 
 ```ts
+[...]
+
 model Book{
   id        String     @id @db.Uuid @default(uuid())
   title     String
@@ -209,26 +207,44 @@ model Book{
   IsFinished Boolean @default(false)
 }
 ```
+### Como fazer relação entre modelos
+no arquivo `schema.prisma`, as relações são feitas pela sintaxe `@relation`, como nessa relação 1:N
+```ts
+model Author {
+  id        String   @id @db.Uuid @default(uuid())
+  name      String
+  books     Book[]   @relation("AuthorBooks") //um autor pode ter varios livros
+}
+
+model Book {
+  id        String   @id @db.Uuid @default(uuid())
+  title     String
+  authorId  String
+  author    Author   @relation(fields: [authorId], references: [id], name: "AuthorBooks")
+}
+
+```
+
+Com os modelos criados, faça uma migração com o comando abaixo, depois de executar a migração, de um nome e ela sera concluida, gerando a migração e os arquivos .sql
 
 ```bash
 npx prisma migrate dev
 ```
-Aqui está a versão melhorada e mais concisa do trecho:
 
 ---
 
-Para modularizar a aplicação, criamos duas pastas dentro de `📂api`: `📂routes`, que contém todas as rotas da API, e `📂service`, onde fica o arquivo `prisma.ts`, que será reutilizado nas rotas.
+Para modularizar a aplicação, criamos duas pastas dentro de `📂http`: `📂routes`, que contém todas as rotas da API, e `📂service`, onde fica o arquivo `prisma.ts`, que será reutilizado nas rotas.
 
 ```
 ├── prisma/
 ├── src/
-│   ├── api/
+│   ├── http/
 │   │   ├── service/
 │   │   ├── routes/
 │   │   └── server.ts
 ├── .env
-├── .gitignore
 ├── package.json
+├── package-lock.json
 └── tsconfig.json
 ```
 
@@ -244,6 +260,8 @@ export const prisma = new PrismaClient();
 ## Criando rotas personalizadas
 
 Na pasta `📂routes`, dentro do arquivo `createBook.ts`, criamos a rota para criar um livro, utilizando o Zod para validar o objeto. Para garantir que o Swagger documente corretamente o endpoint, passamos o schema diretamente no código.
+
+### Create
 
 ```ts
 import { FastifyInstance } from "fastify";
@@ -299,9 +317,9 @@ export async function createBook(app: FastifyInstance) {
 })}
 
 ```
-Então volta ao arquivo `server.ts` e registre a criação da rota com `app.register()`
+Então volte ao arquivo `server.ts` para registrar a criação da rota com `app.register()`
 ```ts
-...
+[...]
 
 app.get("/",  () => {
     return "servidor ok";
@@ -318,6 +336,8 @@ app.listen({port: 8080}).then(() => {
 ...
 
 ```
+
+### GET
 
 Igualmente para a função get, criamos um arquivo `getBooks.ts` dentro de routes, junto do schema para a documentação do swagger
 ```ts
@@ -352,6 +372,7 @@ export async function getBook(app: FastifyInstance) {
     });
 
     app.get("/books/:bookId", {
+        // o schema é para a documentação do swagger
         schema: {
             description: "Retorna um livro pelo ID",
             tags: ["Livros"],
@@ -381,7 +402,7 @@ export async function getBook(app: FastifyInstance) {
                     }
                 }
             }
-        }
+        } //aqui começa a criação do endpoint
     }, async (request, reply) => {
         const getBookParams = z.object({
             bookId: z.string().uuid(),
@@ -412,6 +433,9 @@ app.register(getBook) // <- aqui
 ...
 ```
 Agora criamos o endpoint de update com o arquivo `updateBooks.ts`
+
+### Update
+
 ```ts
 import { FastifyInstance } from "fastify";
 import z from "zod";
@@ -497,6 +521,9 @@ export async function updateBook(app: FastifyInstance) {
 
 ```
 e para terminar o crud, vamos fazer o `delete`, criando tambem um arquivo dentro da pasta routes
+
+### Delete
+
 ```ts
 import { FastifyInstance } from "fastify";
 import z from "zod";
@@ -604,24 +631,6 @@ app.listen({port: 8080}).then(() => {
     console.log("Server is running on port 8080");
 })
 ```
-### Como fazer relação entre modelos
-no arquivo `schema.prisma`, as relações são feitas pela sintaxe `@relation`, como nessa relação 1:N
-```ts
-model Author {
-  id        String   @id @db.Uuid @default(uuid())
-  name      String
-  books     Book[]   @relation("AuthorBooks") //um autor pode ter varios livros
-}
-
-model Book {
-  id        String   @id @db.Uuid @default(uuid())
-  title     String
-  authorId  String
-  author    Author   @relation(fields: [authorId], references: [id], name: "AuthorBooks")
-}
-
-```
-
 
 ## Referencias
 - [FastFy](https://fastify.dev)
