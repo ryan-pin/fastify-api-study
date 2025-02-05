@@ -51,6 +51,19 @@ Adicione os seguintes scripts no arquivo `package.json` para facilitar a execuç
 }
 ```
 
+Se preferir utilizar o `tsx` para rodar o server, instale ele junto das dependencias 
+- (se optar por usar o tsx, nao sera necessario instalar o `ts-node`, se optar por usar o `ts-node`, não sera necessario baixar o `tsx`)
+```bash
+npm install --save-dev tsx
+```
+
+e altere o `package.json`
+```json
+  "scripts": {
+    "dev": "tsx watch src/http/server.ts"
+  },
+```
+
 4️⃣ **Inicializando o TypeScript (tsc)** 🌟
 
 Execute o comando abaixo para criar o arquivo `tsconfig.json`:
@@ -122,6 +135,7 @@ npm install @fastify/swagger @fastify/swagger-ui
 2️⃣ **Configurando o Swagger no `server.ts`** 🖥️
 
 Adicione o seguinte código no `server.ts` para configurar o Swagger e permitir o acesso à documentação da API:
+pode ser utilizado o swagger
 
 ```ts
 [...]
@@ -155,6 +169,36 @@ fastify.register(swaggerUi, {
 });
 [...]
 
+```
+
+### exemplo de rota documentada 
+```js
+fastify.get('/usuarios', {
+  schema: {
+    description: 'Obtém a lista de usuários',
+    tags: ['Usuários'], // Agrupa no Swagger
+    summary: 'Retorna todos os usuários',
+    response: {
+      200: {
+        description: 'Lista de usuários retornada com sucesso',
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            nome: { type: 'string' },
+            email: { type: 'string' }
+          }
+        }
+      }
+    }
+  }
+}, async (request, reply) => {
+  return [
+    { id: 1, nome: 'Ryan', email: 'ryan@example.com' },
+    { id: 2, nome: 'Placido', email: 'placido@example.com' }
+  ];
+});
 ```
 
 Agora sua API está documentada pelo swagger e acessível pela URL `http://localhost:8080/docs`. 🌐
@@ -222,6 +266,37 @@ model Book {
 
 ```
 
+e uma relação um pouco mais complexa entre, livro, editoria e autor
+```ts
+model Author {
+  id        String   @id @db.Uuid @default(uuid())
+  name      String
+  books     Book[]   @relation("AuthorBooks") // Um autor pode ter vários livros
+}
+
+model Publisher {
+  id        String   @id @db.Uuid @default(uuid())
+  name      String
+  books     Book[]   @relation("PublisherBooks") // Uma editora pode publicar vários livros
+}
+
+model Book {
+  id          String   @id @db.Uuid @default(uuid())
+  title       String
+  authorId    String
+  publisherId String
+
+  author      Author   @relation(fields: [authorId], references: [id], name: "AuthorBooks")
+  publisher   Publisher @relation(fields: [publisherId], references: [id], name: "PublisherBooks")
+}
+
+```
+
+- (se preferir que o id seja um numero inteiro e não um uid, utilize esse codigo)
+```ts
+id        Int      @id @default(autoincrement())
+```
+
 Com os modelos criados, faça uma migração com o comando abaixo, depois de executar a migração, de um nome e ela sera concluida, gerando a migração e os arquivos .sql
 
 ```bash
@@ -230,7 +305,7 @@ npx prisma migrate dev
 
 ---
 
-Para modularizar a aplicação, criamos duas pastas dentro de `📂http`: `📂routes`, que contém todas as rotas da API, e `📂service`, onde fica o arquivo `prisma.ts`, que será reutilizado nas rotas.
+Para modularizar a aplicação, criamos duas pastas dentro de `📂http`: `📂routes`, que contém todas as rotas da API, e `📂service`, onde você deve criar o arquivo `prisma.ts`, que será reutilizado nas rotas.
 
 ```
 ├── prisma/

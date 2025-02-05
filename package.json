@@ -4,8 +4,7 @@
   "description": "Repositorio de estudo do fastify para uma api rest",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "ts-node src/http/server.ts"
+    "dev": "tsx watch src/http/server.ts"
   },
   "keywords": [],
   "author": "",
