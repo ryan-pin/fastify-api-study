@@ -50,6 +50,9 @@ Adicione os seguintes scripts no arquivo `package.json` para facilitar a execuç
   "dev": "ts-node src/http/server.ts"  // Para rodar o servidor diretamente com o TypeScript
 }
 ```
+### tsx 
+
+- (TypeScript Execute) é uma ferramenta que permite rodar arquivos TypeScript e JavaScript sem necessidade de compilação prévia. Ele é útil para desenvolvimento de servidores em Node.js com TypeScript, pois elimina a necessidade de compilar manualmente os arquivos .ts antes de executá-los
 
 Se preferir utilizar o `tsx` para rodar o server, instale ele junto das dependencias 
 - (se optar por usar o tsx, nao sera necessario instalar o `ts-node`, se optar por usar o `ts-node`, não sera necessario baixar o `tsx`)
@@ -151,19 +154,19 @@ fastify.register(swagger, {
       version: '1.0.0',
     },
     host: 'localhost:8080',
-    schemes: ['http'],
-    consumes: ['application/json'],
-    produces: ['application/json'],
+    schemes: ['http'],                //opcional
+    consumes: ['application/json'],   //opcional
+    produces: ['application/json'],   //opcional
   }
 });
 
 // Rota para acessar a documentação do Swagger
 fastify.register(swaggerUi, {
   routePrefix: '/docs', // URL da documentação
-  uiConfig: {
+  uiConfig: {              //opcional
     docExpansion: 'full',
     deepLinking: false,
-  },
+  }, //opcional
   staticCSP: true,
   transformSpecificationClone: true,
 });
@@ -581,9 +584,9 @@ export async function updateBook(app: FastifyInstance) {
     await prisma.book.update({
       where: { id: bookId },
       data: {
-        isFavorite: isFavorite ?? book.isFavorite,
-        isReading: isReading ?? book.isReading,
-        isFinished: isFinished ?? book.isFinished,
+        IsFavorite: isFavorite ?? book.IsFavorite,
+        IsReading: isReading ?? book.IsReading,
+        IsFinished: isFinished ?? book.IsFinished,
       }
     });
 
@@ -630,7 +633,7 @@ export async function deleteBook(app: FastifyInstance) {
         const getBookParams = z.object({
             bookId: z.string().uuid(),
         });
-
+         // Extração e validação dos dados
         const { bookId } = getBookParams.parse(request.params);
 
         const book = await prisma.book.findUnique({
@@ -699,9 +702,9 @@ app.register(getBook)
 app.register(updateBook)
 app.register(deleteBook)
 
-app.listen({port: 8080}).then(() => {
-    console.log("Server is running on port 8080");
-})
+app.listen({ port: 8080, host: "0.0.0.0" }).then((address) => {
+  console.log(`Server is running at ${address}`);
+});
 ```
 
 ## Referencias
